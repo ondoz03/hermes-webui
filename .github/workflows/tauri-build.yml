@@ -47,7 +47,36 @@ jobs:
             libjavascriptcoregtk-4.1-dev \
             libssl-dev \
             pkg-config \
-            build-essential
+            build-essential \
+            wget
+
+      - name: Extract linuxdeploy (no FUSE needed on CI)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p ~/.local/bin
+
+          # Extract linuxdeploy
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          ./linuxdeploy-x86_64.AppImage --appimage-extract
+          mv squashfs-root ~/.local/bin/linuxdeploy-extracted
+          ln -s ~/.local/bin/linuxdeploy-extracted/AppRun ~/.local/bin/linuxdeploy
+
+          # Linuxdeploy plugin - appimagetool (for creating final AppImage)
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          mv squashfs-root ~/.local/bin/appimagetool-extracted
+          ln -s ~/.local/bin/appimagetool-extracted/AppRun ~/.local/bin/appimagetool
+
+          # Download Tauri's plugins
+          wget -q https://raw.githubusercontent.com/tauri-apps/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh -O ~/.local/bin/linuxdeploy-plugin-gtk.sh
+          wget -q https://raw.githubusercontent.com/tauri-apps/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh -O ~/.local/bin/linuxdeploy-plugin-gstreamer.sh
+
+          chmod +x ~/.local/bin/*
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+          echo "✅ linuxdeploy + appimagetool extracted (no FUSE needed)"
 
       - name: Install system deps (macOS)
         if: matrix.os == 'macos-latest'
