@@ -7,9 +7,13 @@ on:
     branches: [master, main]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -44,10 +48,6 @@ jobs:
             libssl-dev \
             pkg-config \
             build-essential
-
-      - name: Install system deps (macOS)
-        if: matrix.os == 'macos-latest'
-        run: brew install webkit2gtk
 
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
