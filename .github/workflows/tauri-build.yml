@@ -55,6 +55,9 @@ jobs:
           # macOS has built-in WebKit, no extra deps needed
           echo "macOS ready"
 
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+
       - name: Build Hermes Desktop
         working-directory: .
         run: cargo tauri build
