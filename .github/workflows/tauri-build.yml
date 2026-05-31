@@ -47,11 +47,13 @@ jobs:
             libjavascriptcoregtk-4.1-dev \
             libssl-dev \
             pkg-config \
-            build-essential \
-            libfuse2 fuse
+            build-essential
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2"
+      - name: Install system deps (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          # macOS has built-in WebKit, no extra deps needed
+          echo "macOS ready"
 
       - name: Build Hermes Desktop
         working-directory: .
@@ -59,6 +61,8 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          NO_FUSE: 1
+          APPIMAGE_EXTRACT_AND_RUN: 1
 
       - name: Upload artifact (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -80,9 +84,3 @@ jobs:
         with:
           name: Hermes-Desktop-Windows
           path: src-tauri/target/release/bundle/msi/*.msi
-
-      - name: Upload binary (all platforms)
-        uses: actions/upload-artifact@v4
-        with:
-          name: Hermes-Desktop-binary-${{ matrix.target }}
-          path: src-tauri/target/release/hermes-desktop*
